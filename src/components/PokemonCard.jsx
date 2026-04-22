@@ -1,0 +1,55 @@
+import { Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { toggleFavorite } from '../features/favorites/favoritesSlice'
+
+function PokemonCard({ card }) {
+  const dispatch = useDispatch()
+  const favoriteItems = useSelector((state) => state.favorites.items)
+  const isFavorite = favoriteItems.some((favoriteCard) => favoriteCard.id === card.id)
+
+  const handleToggleFavorite = () => {
+    dispatch(
+      toggleFavorite({
+        id: card.id,
+        name: card.name,
+        images: card.images,
+        hp: card.hp,
+        rarity: card.rarity,
+        types: card.types,
+        set: card.set,
+      }),
+    )
+  }
+
+  return (
+    <article className="pokemon-card">
+      <div className="card-image-shell">
+        <img src={card.images.small} alt={card.name} loading="lazy" />
+      </div>
+
+      <div className="pokemon-card-body">
+        <div className="card-meta-row">
+          <span>{card.rarity || 'Unknown rarity'}</span>
+          <span>{card.hp ? `${card.hp} HP` : 'HP N/A'}</span>
+        </div>
+        <h3>{card.name}</h3>
+        <p>{card.types?.join(', ') || 'Type not listed'}</p>
+
+        <div className="card-actions">
+          <Link className="primary-link" to={`/card/${card.id}`}>
+            View Details
+          </Link>
+          <button
+            className={isFavorite ? 'favorite-button favorite-active' : 'favorite-button'}
+            onClick={handleToggleFavorite}
+            type="button"
+          >
+            {isFavorite ? 'Saved' : 'Favorite'}
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+export default PokemonCard
