@@ -11,10 +11,11 @@ function Home() {
       <section className="hero-banner">
         <div>
           <p className="eyebrow">PokeVault</p>
-          <h1>Discover Pokemon Trading Cards</h1>
+          <h1>Explore 1,000+ unique Pokemon TCG cards</h1>
           <p className="hero-description">
-            Search, explore, and save standout cards in a polished collection
-            experience powered by Redux Toolkit and RTK Query.
+            A polished Pokemon card explorer built with React, Redux Toolkit,
+            and RTK Query for responsive browsing, filtering, pagination, and
+            full detail views.
           </p>
         </div>
         <div className="hero-actions">
@@ -26,8 +27,8 @@ function Home() {
             Browse All Cards
           </button>
           <p className="hero-caption">
-            Open the full catalog, jump into rare-only browsing, and compare cards
-            with unique names, descriptions, and artwork.
+            Browse a large live catalog, search by name, filter by set or type,
+            and open full card profiles without loading everything at once.
           </p>
         </div>
       </section>
@@ -35,7 +36,7 @@ function Home() {
       <CatalogSection
         eyebrow="Live Catalog"
         title="Featured Pokemon cards"
-        description="Jump into the live feed, then open dedicated pages to browse the full catalog or a rare-only collection."
+        description="Start with a fast paginated feed, then move into the full catalog, rare-only views, and dedicated card detail pages."
         filters={filters}
         showFeaturedRareStrip
       />

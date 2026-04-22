@@ -24,6 +24,7 @@ import {
   setSortBy,
   setType,
 } from '../features/ui/uiSlice'
+import { dedupeCardsById } from '../utils/cardFormatters'
 
 function CatalogSection({
   eyebrow,
@@ -55,7 +56,10 @@ function CatalogSection({
   const prefetchCardsBySearch = pokemonApi.usePrefetch('getCardsBySearch')
   const activeQuery = hasSearch ? searchQuery : listQuery
 
-  const displayedCards = useMemo(() => activeQuery.data?.data ?? [], [activeQuery.data])
+  const displayedCards = useMemo(
+    () => dedupeCardsById(activeQuery.data?.data ?? []),
+    [activeQuery.data],
+  )
   const totalCount = activeQuery.data?.totalCount ?? 0
   const totalPages = totalCount > 0 ? Math.ceil(totalCount / queryFilters.pageSize) : 0
   const visibleStart = totalCount > 0 ? (queryFilters.page - 1) * queryFilters.pageSize + 1 : 0
@@ -118,7 +122,7 @@ function CatalogSection({
             <h2>{title}</h2>
             <p>{description}</p>
             <p className="catalog-summary">
-              Showing {visibleStart}-{visibleEnd} of {totalCount.toLocaleString()} cards.
+              Showing {visibleStart}-{visibleEnd} of {totalCount.toLocaleString()} unique cards.
               {totalCount >= 1000 ? ' More than 1,000 cards are available through paginated browsing.' : ''}
             </p>
           </div>

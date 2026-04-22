@@ -5,6 +5,7 @@ import ErrorMessage from '../components/ErrorMessage'
 import { useGetCardByIdQuery } from '../features/api/pokemonApi'
 import { toggleFavorite } from '../features/favorites/favoritesSlice'
 import { getCardDescription, getCardDisplayName } from '../utils/cardContent'
+import { formatKeyValueObject, formatValue } from '../utils/cardFormatters'
 
 function CardDetails() {
   const { id } = useParams()
@@ -33,7 +34,10 @@ function CardDetails() {
 
   const card = data?.data
   const isFavorite = favoriteItems.some((favoriteCard) => favoriteCard.id === card.id)
-  const marketPrices = card.tcgplayer?.prices || card.cardmarket?.prices
+  const tcgPlayerEntries = formatKeyValueObject(card.tcgplayer)
+  const cardMarketEntries = formatKeyValueObject(card.cardmarket)
+  const setEntries = formatKeyValueObject(card.set)
+  const legalityEntries = formatKeyValueObject(card.legalities)
 
   return (
     <section className="details-page">
@@ -49,10 +53,10 @@ function CardDetails() {
         <div className="details-content">
           <div className="details-header">
             <div>
-              <p className="eyebrow">{card.set.name}</p>
+              <p className="eyebrow">{card.set?.name || 'Pokemon TCG card'}</p>
               <h1>{getCardDisplayName(card)}</h1>
               <p className="details-subtitle">
-                {card.supertype} {card.subtypes?.length ? `• ${card.subtypes.join(', ')}` : ''}
+                {formatValue(card.supertype, 'Card')} {card.subtypes?.length ? `| ${card.subtypes.join(', ')}` : ''}
               </p>
             </div>
             <button
@@ -77,10 +81,12 @@ function CardDetails() {
           </div>
 
           <div className="details-grid">
-            <InfoCard label="HP" value={card.hp || 'N/A'} />
-            <InfoCard label="Types" value={card.types?.join(', ') || 'N/A'} />
-            <InfoCard label="Rarity" value={card.rarity || 'N/A'} />
-            <InfoCard label="Artist" value={card.artist || 'N/A'} />
+            <InfoCard label="ID" value={formatValue(card.id)} />
+            <InfoCard label="HP" value={formatValue(card.hp)} />
+            <InfoCard label="Types" value={formatValue(card.types)} />
+            <InfoCard label="Rarity" value={formatValue(card.rarity)} />
+            <InfoCard label="Artist" value={formatValue(card.artist)} />
+            <InfoCard label="Regulation Mark" value={formatValue(card.regulationMark)} />
           </div>
 
           <section className="details-section">
@@ -91,6 +97,39 @@ function CardDetails() {
           </section>
 
           <section className="details-section">
+            <h2>Pokemon details</h2>
+            <div className="details-grid">
+              <InfoCard label="Name" value={formatValue(card.name)} />
+              <InfoCard label="Supertype" value={formatValue(card.supertype)} />
+              <InfoCard label="Subtypes" value={formatValue(card.subtypes)} />
+              <InfoCard label="Level" value={formatValue(card.level)} />
+              <InfoCard label="Evolves From" value={formatValue(card.evolvesFrom)} />
+              <InfoCard label="Evolves To" value={formatValue(card.evolvesTo)} />
+              <InfoCard label="Retreat Cost" value={formatValue(card.retreatCost)} />
+              <InfoCard label="Converted Retreat" value={formatValue(card.convertedRetreatCost)} />
+              <InfoCard label="National Pokedex" value={formatValue(card.nationalPokedexNumbers)} />
+              <InfoCard label="Flavor Text" value={formatValue(card.flavorText)} />
+            </div>
+          </section>
+
+          <section className="details-section">
+            <h2>Abilities</h2>
+            {card.abilities?.length ? (
+              <div className="list-stack">
+                {card.abilities.map((ability) => (
+                  <article key={ability.name} className="detail-block">
+                    <strong>{ability.name}</strong>
+                    <span>{formatValue(ability.type)}</span>
+                    <p>{formatValue(ability.text)}</p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="muted-copy">No ability data available.</p>
+            )}
+          </section>
+
+          <section className="details-section">
             <h2>Attacks</h2>
             {card.attacks?.length ? (
               <div className="list-stack">
@@ -98,9 +137,8 @@ function CardDetails() {
                   <article key={attack.name} className="detail-block">
                     <strong>{attack.name}</strong>
                     <p>{attack.text || 'No description available.'}</p>
-                    <span>
-                      Damage: {attack.damage || 'N/A'} • Cost: {attack.cost?.join(', ') || 'N/A'}
-                    </span>
+                    <span>Damage: {attack.damage || 'N/A'} | Cost: {attack.cost?.join(', ') || 'N/A'}</span>
+                    <span>Converted energy cost: {formatValue(attack.convertedEnergyCost)}</span>
                   </article>
                 ))}
               </div>
@@ -110,43 +148,83 @@ function CardDetails() {
           </section>
 
           <section className="details-section">
-            <h2>Weaknesses</h2>
-            {card.weaknesses?.length ? (
-              <div className="list-stack">
-                {card.weaknesses.map((weakness) => (
-                  <article key={`${weakness.type}-${weakness.value}`} className="detail-block">
-                    <strong>{weakness.type}</strong>
-                    <span>{weakness.value}</span>
-                  </article>
+            <h2>Battle modifiers</h2>
+            <div className="details-grid">
+              <InfoListCard
+                label="Weaknesses"
+                items={card.weaknesses?.map((item) => `${item.type} ${item.value}`)}
+              />
+              <InfoListCard
+                label="Resistances"
+                items={card.resistances?.map((item) => `${item.type} ${item.value}`)}
+              />
+            </div>
+          </section>
+
+          <section className="details-section">
+            <h2>Set information</h2>
+            {setEntries.length ? (
+              <div className="details-grid">
+                {setEntries.map(([entryLabel, entryValue]) => (
+                  <InfoCard key={entryLabel} label={entryLabel} value={formatValue(entryValue)} />
                 ))}
               </div>
             ) : (
-              <p className="muted-copy">No weakness data available.</p>
+              <p className="muted-copy">No set information available.</p>
             )}
           </section>
 
           <section className="details-section">
-            <h2>Market details</h2>
-            {marketPrices ? (
+            <h2>Printing and legality</h2>
+            <div className="details-grid">
+              <InfoCard label="Number" value={formatValue(card.number)} />
+              <InfoCard label="Rarity" value={formatValue(card.rarity)} />
+              <InfoCard label="Legalities" value={legalityEntries.map(([key, value]) => `${key}: ${value}`).join(', ') || 'Not available'} />
+              <InfoCard label="Images" value={formatValue(card.images ? Object.keys(card.images) : [])} />
+            </div>
+          </section>
+
+          <section className="details-section">
+            <h2>TCGplayer data</h2>
+            {tcgPlayerEntries.length ? (
               <div className="pricing-grid">
-                {Object.entries(marketPrices)
-                  .slice(0, 4)
-                  .map(([priceKey, priceValue]) => (
-                    <article key={priceKey} className="detail-block">
-                      <strong>{priceKey}</strong>
-                      <span>
-                        {typeof priceValue === 'object'
-                          ? Object.entries(priceValue)
-                              .slice(0, 2)
-                              .map(([nestedKey, nestedValue]) => `${nestedKey}: ${nestedValue}`)
-                              .join(' • ')
-                          : String(priceValue)}
-                      </span>
-                    </article>
-                  ))}
+                {tcgPlayerEntries.map(([entryLabel, entryValue]) => (
+                  <article key={entryLabel} className="detail-block">
+                    <strong>{entryLabel}</strong>
+                    <span>
+                      {typeof entryValue === 'object'
+                        ? Object.entries(entryValue)
+                            .map(([nestedKey, nestedValue]) => `${nestedKey}: ${nestedValue}`)
+                            .join(' | ')
+                        : String(entryValue)}
+                    </span>
+                  </article>
+                ))}
               </div>
             ) : (
-              <p className="muted-copy">Market prices are not available for this card.</p>
+              <p className="muted-copy">TCGplayer data is not available for this card.</p>
+            )}
+          </section>
+
+          <section className="details-section">
+            <h2>Cardmarket data</h2>
+            {cardMarketEntries.length ? (
+              <div className="pricing-grid">
+                {cardMarketEntries.map(([entryLabel, entryValue]) => (
+                  <article key={entryLabel} className="detail-block">
+                    <strong>{entryLabel}</strong>
+                    <span>
+                      {typeof entryValue === 'object'
+                        ? Object.entries(entryValue)
+                            .map(([nestedKey, nestedValue]) => `${nestedKey}: ${nestedValue}`)
+                            .join(' | ')
+                        : String(entryValue)}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="muted-copy">Cardmarket data is not available for this card.</p>
             )}
           </section>
         </div>
@@ -160,6 +238,15 @@ function InfoCard({ label, value }) {
     <article className="info-card">
       <span>{label}</span>
       <strong>{value}</strong>
+    </article>
+  )
+}
+
+function InfoListCard({ label, items = [] }) {
+  return (
+    <article className="info-card">
+      <span>{label}</span>
+      <strong>{items.length ? items.join(', ') : 'Not available'}</strong>
     </article>
   )
 }

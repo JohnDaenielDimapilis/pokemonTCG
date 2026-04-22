@@ -43,6 +43,7 @@ function PokemonCard({ card }) {
         </div>
         <h3>{getCardDisplayName(card)}</h3>
         <p>{card.types?.join(', ') || 'Type not listed'}</p>
+        <p className="card-set-name">{card.set?.name || 'Set not listed'}</p>
 
         <div className="card-actions">
           <Link className="primary-link" to={`/card/${card.id}`}>

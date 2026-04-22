@@ -1,29 +1,31 @@
 import { startTransition, useEffect, useMemo, useState } from 'react'
 import PokemonCard from './PokemonCard'
+import { dedupeCardsById } from '../utils/cardFormatters'
 
 function CardGrid({ cards }) {
   const initialVisibleCount = 8
+  const uniqueCards = useMemo(() => dedupeCardsById(cards), [cards])
   const [visibleCount, setVisibleCount] = useState(
-    cards.length <= initialVisibleCount ? cards.length : initialVisibleCount,
+    uniqueCards.length <= initialVisibleCount ? uniqueCards.length : initialVisibleCount,
   )
 
   useEffect(() => {
-    if (cards.length <= initialVisibleCount) {
+    if (uniqueCards.length <= initialVisibleCount) {
       return undefined
     }
 
     const frameId = window.requestAnimationFrame(() => {
       startTransition(() => {
-        setVisibleCount(cards.length)
+        setVisibleCount(uniqueCards.length)
       })
     })
 
     return () => window.cancelAnimationFrame(frameId)
-  }, [cards.length])
+  }, [uniqueCards.length])
 
   const visibleCards = useMemo(
-    () => cards.slice(0, visibleCount),
-    [cards, visibleCount],
+    () => uniqueCards.slice(0, visibleCount),
+    [uniqueCards, visibleCount],
   )
 
   return (
