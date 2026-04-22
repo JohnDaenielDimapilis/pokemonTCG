@@ -30,7 +30,7 @@ function Navbar({ searchValue, onSearchChange, onThemeToggle, theme }) {
       </nav>
 
       <div className="navbar-actions">
-        <SearchBar value={searchValue} onChange={onSearchChange} />
+        <SearchBar key={searchValue} value={searchValue} onChange={onSearchChange} />
         <button className="theme-toggle" onClick={onThemeToggle} type="button">
           {theme === 'dark' ? 'Light mode' : 'Dark mode'}
         </button>

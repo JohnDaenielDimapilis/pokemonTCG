@@ -1,8 +1,9 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { pokemonApi } from '../features/api/pokemonApi'
 import { toggleFavorite } from '../features/favorites/favoritesSlice'
-import { getCardDescription, getCardDisplayName } from '../utils/cardContent'
+import { getCardDisplayName } from '../utils/cardContent'
 
 function PokemonCard({ card }) {
   const dispatch = useDispatch()
@@ -40,7 +41,7 @@ function PokemonCard({ card }) {
           <span>{card.hp ? `${card.hp} HP` : 'HP N/A'}</span>
         </div>
         <h3>{getCardDisplayName(card)}</h3>
-        <p>{getCardDescription(card)}</p>
+        <p>{card.types?.join(', ') || 'Type not listed'}</p>
 
         <div className="card-actions">
           <Link className="primary-link" to={`/card/${card.id}`}>
@@ -59,4 +60,4 @@ function PokemonCard({ card }) {
   )
 }
 
-export default PokemonCard
+export default memo(PokemonCard)

@@ -51,7 +51,7 @@ function CardDetails() {
               <p className="eyebrow">{card.set.name}</p>
               <h1>{getCardDisplayName(card)}</h1>
               <p className="details-subtitle">
-                {card.supertype} {card.subtypes?.length ? `| ${card.subtypes.join(', ')}` : ''}
+                {card.supertype} {card.subtypes?.length ? `• ${card.subtypes.join(', ')}` : ''}
               </p>
             </div>
             <button
@@ -98,7 +98,7 @@ function CardDetails() {
                     <strong>{attack.name}</strong>
                     <p>{attack.text || 'No description available.'}</p>
                     <span>
-                      Damage: {attack.damage || 'N/A'} | Cost: {attack.cost?.join(', ') || 'N/A'}
+                      Damage: {attack.damage || 'N/A'} • Cost: {attack.cost?.join(', ') || 'N/A'}
                     </span>
                   </article>
                 ))}
@@ -138,7 +138,7 @@ function CardDetails() {
                           ? Object.entries(priceValue)
                               .slice(0, 2)
                               .map(([nestedKey, nestedValue]) => `${nestedKey}: ${nestedValue}`)
-                              .join(' | ')
+                              .join(' • ')
                           : String(priceValue)}
                       </span>
                     </article>

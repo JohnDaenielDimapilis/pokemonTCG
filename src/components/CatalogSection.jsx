@@ -1,3 +1,4 @@
+import { skipToken } from '@reduxjs/toolkit/query'
 import { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -9,6 +10,7 @@ import Pagination from './Pagination'
 import {
   pokemonApi,
   useGetCardsQuery,
+  useGetCardsBySearchQuery,
   useGetRaritiesQuery,
   useGetSetsQuery,
   useGetTypesQuery,
@@ -41,23 +43,19 @@ function CatalogSection({
     }),
     [filters, lockedRarity],
   )
-  const {
-    data: cardsResponse,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = useGetCardsQuery(queryFilters)
+  const hasSearch = queryFilters.search.trim().length > 0
+  const listQuery = useGetCardsQuery(hasSearch ? skipToken : queryFilters)
+  const searchQuery = useGetCardsBySearchQuery(hasSearch ? queryFilters : skipToken)
   const { data: typesResponse } = useGetTypesQuery()
   const { data: raritiesResponse } = useGetRaritiesQuery()
   const { data: setsResponse } = useGetSetsQuery()
   const prefetchCard = pokemonApi.usePrefetch('getCardById')
+  const activeQuery = hasSearch ? searchQuery : listQuery
 
-  const displayedCards = useMemo(() => cardsResponse?.data ?? [], [cardsResponse])
-  const totalCount = cardsResponse?.totalCount ?? 0
+  const displayedCards = useMemo(() => activeQuery.data?.data ?? [], [activeQuery.data])
+  const totalCount = activeQuery.data?.totalCount ?? 0
   const hasNextPage = queryFilters.page * queryFilters.pageSize < totalCount
-  const showSkeletonOnly = isLoading && !displayedCards.length
+  const showSkeletonOnly = activeQuery.isLoading && !displayedCards.length
   const gridRenderKey = `${queryFilters.page}-${queryFilters.search}-${queryFilters.type}-${queryFilters.rarity}-${queryFilters.setId}-${queryFilters.sortBy}`
   const featuredRareCards = useMemo(() => {
     return displayedCards
@@ -91,7 +89,9 @@ function CatalogSection({
           <div className="section-status">
             <span className="count-pill">{totalCount.toLocaleString()} matches</span>
             {lockedRarity ? <span className="status-pill">{lockedRarity} only</span> : null}
-            {isFetching && !isLoading ? <span className="status-pill">Refreshing</span> : null}
+            {activeQuery.isFetching && !activeQuery.isLoading ? (
+              <span className="status-pill">Refreshing</span>
+            ) : null}
           </div>
         </section>
 
@@ -122,24 +122,28 @@ function CatalogSection({
 
         {showSkeletonOnly ? <Loader count={8} /> : null}
 
-        {isError ? (
+        {activeQuery.isError ? (
           <ErrorMessage
             title="Unable to load cards"
-            message={error?.error || 'The Pokemon TCG API is unavailable right now.'}
-            onRetry={refetch}
+            message={activeQuery.error?.error || 'The Pokemon TCG API is unavailable right now.'}
+            onRetry={activeQuery.refetch}
           />
         ) : null}
 
-        {!showSkeletonOnly && !isError && displayedCards.length === 0 ? (
+        {!showSkeletonOnly && !activeQuery.isError && displayedCards.length === 0 ? (
           <section className="state-card">
             <h2>{emptyTitle}</h2>
             <p>{emptyMessage}</p>
           </section>
         ) : null}
 
-        {!showSkeletonOnly && !isError && displayedCards.length > 0 ? (
+        {!showSkeletonOnly && !activeQuery.isError && displayedCards.length > 0 ? (
           <>
-            <div className={isFetching ? 'results-shell results-shell-refreshing' : 'results-shell'}>
+            <div
+              className={
+                activeQuery.isFetching ? 'results-shell results-shell-refreshing' : 'results-shell'
+              }
+            >
               <CardGrid key={gridRenderKey} cards={displayedCards} />
             </div>
             <Pagination
