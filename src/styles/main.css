@@ -86,11 +86,13 @@ img {
 .filter-panel,
 .section-header,
 .state-card,
+.page-intro,
 .details-image-panel,
 .details-content,
 .rare-strip,
 .info-card,
-.detail-block {
+.detail-block,
+.locked-filter-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -154,7 +156,8 @@ img {
 .navbar-actions,
 .card-actions,
 .pagination,
-.hero-actions {
+.hero-actions,
+.section-status {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -242,6 +245,7 @@ img {
 .hero-banner h1,
 .section-header h2,
 .filter-panel h2,
+.page-intro h1,
 .details-content h1,
 .state-card h2,
 .details-section h2 {
@@ -284,6 +288,7 @@ img {
 }
 
 .filter-panel,
+.page-intro,
 .section-header,
 .state-card,
 .details-image-panel,
@@ -300,6 +305,19 @@ img {
   align-self: start;
   position: sticky;
   top: 1.5rem;
+}
+
+.page-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.page-intro p {
+  margin: 0.5rem 0 0;
+  color: var(--text-muted);
+  max-width: 72ch;
 }
 
 .panel-heading p {
@@ -334,6 +352,13 @@ img {
   color: #bfdbfe;
 }
 
+.count-pill {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.14);
+  color: var(--yellow);
+}
+
 .rare-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -360,6 +385,10 @@ img {
 .info-card strong,
 .detail-block strong {
   color: var(--text-main);
+}
+
+.rare-card span {
+  color: var(--text-muted);
 }
 
 .card-grid {
@@ -405,6 +434,9 @@ img {
 
 .pokemon-card-body {
   padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
 }
 
 .card-meta-row {
@@ -413,6 +445,16 @@ img {
   gap: 0.75rem;
   color: var(--text-muted);
   font-size: 0.85rem;
+}
+
+.pokemon-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.pokemon-card p {
+  margin: 0;
+  min-height: 4.7rem;
 }
 
 .favorite-button {
@@ -468,6 +510,21 @@ img {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+}
+
+.detail-copy {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.locked-filter-card {
+  border-radius: 20px;
+  padding: 1rem;
+}
+
+.locked-filter-card p {
+  margin: 0.45rem 0 0;
+  color: var(--text-muted);
 }
 
 .details-section {

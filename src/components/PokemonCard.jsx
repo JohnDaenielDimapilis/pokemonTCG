@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { pokemonApi } from '../features/api/pokemonApi'
 import { toggleFavorite } from '../features/favorites/favoritesSlice'
+import { getCardDescription, getCardDisplayName } from '../utils/cardContent'
 
 function PokemonCard({ card }) {
   const dispatch = useDispatch()
@@ -38,8 +39,8 @@ function PokemonCard({ card }) {
           <span>{card.rarity || 'Unknown rarity'}</span>
           <span>{card.hp ? `${card.hp} HP` : 'HP N/A'}</span>
         </div>
-        <h3>{card.name}</h3>
-        <p>{card.types?.join(', ') || 'Type not listed'}</p>
+        <h3>{getCardDisplayName(card)}</h3>
+        <p>{getCardDescription(card)}</p>
 
         <div className="card-actions">
           <Link className="primary-link" to={`/card/${card.id}`}>

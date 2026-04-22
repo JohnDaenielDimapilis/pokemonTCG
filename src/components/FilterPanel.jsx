@@ -3,6 +3,8 @@ function FilterPanel({
   types,
   rarities,
   sets,
+  hideRarityFilter = false,
+  lockedRarity = null,
   onTypeChange,
   onRarityChange,
   onSetChange,
@@ -32,21 +34,29 @@ function FilterPanel({
         </select>
       </label>
 
-      <label className="field" htmlFor="rarity-filter">
-        Rarity
-        <select
-          id="rarity-filter"
-          value={filters.rarity}
-          onChange={(event) => onRarityChange(event.target.value)}
-        >
-          <option value="All">All rarities</option>
-          {rarities.map((rarity) => (
-            <option key={rarity} value={rarity}>
-              {rarity}
-            </option>
-          ))}
-        </select>
-      </label>
+      {hideRarityFilter ? (
+        <div className="locked-filter-card">
+          <span className="eyebrow">Pinned Filter</span>
+          <strong>{lockedRarity}</strong>
+          <p>This page is dedicated to rare cards.</p>
+        </div>
+      ) : (
+        <label className="field" htmlFor="rarity-filter">
+          Rarity
+          <select
+            id="rarity-filter"
+            value={filters.rarity}
+            onChange={(event) => onRarityChange(event.target.value)}
+          >
+            <option value="All">All rarities</option>
+            {rarities.map((rarity) => (
+              <option key={rarity} value={rarity}>
+                {rarity}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       <label className="field" htmlFor="set-filter">
         Set

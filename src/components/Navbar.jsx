@@ -18,6 +18,12 @@ function Navbar({ searchValue, onSearchChange, onThemeToggle, theme }) {
         <NavLink className="nav-link" to="/">
           Home
         </NavLink>
+        <NavLink className="nav-link" to="/cards">
+          All Cards
+        </NavLink>
+        <NavLink className="nav-link" to="/rare-cards">
+          Rare Cards
+        </NavLink>
         <NavLink className="nav-link" to="/favorites">
           Favorites
         </NavLink>

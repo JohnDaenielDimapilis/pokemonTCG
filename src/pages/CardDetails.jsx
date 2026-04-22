@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import ErrorMessage from '../components/ErrorMessage'
 import { useGetCardByIdQuery } from '../features/api/pokemonApi'
 import { toggleFavorite } from '../features/favorites/favoritesSlice'
+import { getCardDescription, getCardDisplayName } from '../utils/cardContent'
 
 function CardDetails() {
   const { id } = useParams()
@@ -35,7 +36,7 @@ function CardDetails() {
 
   return (
     <section className="details-page">
-      <Link className="back-link" to="/">
+      <Link className="back-link" to="/cards">
         Back to cards
       </Link>
 
@@ -48,9 +49,9 @@ function CardDetails() {
           <div className="details-header">
             <div>
               <p className="eyebrow">{card.set.name}</p>
-              <h1>{card.name}</h1>
+              <h1>{getCardDisplayName(card)}</h1>
               <p className="details-subtitle">
-                {card.supertype} {card.subtypes?.length ? `• ${card.subtypes.join(', ')}` : ''}
+                {card.supertype} {card.subtypes?.length ? `| ${card.subtypes.join(', ')}` : ''}
               </p>
             </div>
             <button
@@ -82,6 +83,13 @@ function CardDetails() {
           </div>
 
           <section className="details-section">
+            <h2>Card overview</h2>
+            <article className="detail-block">
+              <p className="detail-copy">{getCardDescription(card)}</p>
+            </article>
+          </section>
+
+          <section className="details-section">
             <h2>Attacks</h2>
             {card.attacks?.length ? (
               <div className="list-stack">
@@ -90,7 +98,7 @@ function CardDetails() {
                     <strong>{attack.name}</strong>
                     <p>{attack.text || 'No description available.'}</p>
                     <span>
-                      Damage: {attack.damage || 'N/A'} • Cost: {attack.cost?.join(', ') || 'N/A'}
+                      Damage: {attack.damage || 'N/A'} | Cost: {attack.cost?.join(', ') || 'N/A'}
                     </span>
                   </article>
                 ))}
@@ -130,7 +138,7 @@ function CardDetails() {
                           ? Object.entries(priceValue)
                               .slice(0, 2)
                               .map(([nestedKey, nestedValue]) => `${nestedKey}: ${nestedValue}`)
-                              .join(' • ')
+                              .join(' | ')
                           : String(priceValue)}
                       </span>
                     </article>
