@@ -11,6 +11,7 @@ import {
   useGetRaritiesQuery,
   useGetSetsQuery,
   useGetTypesQuery,
+  pokemonApi,
 } from '../features/api/pokemonApi'
 import {
   resetFilters,
@@ -36,21 +37,25 @@ function Home() {
   const { data: typesResponse } = useGetTypesQuery()
   const { data: raritiesResponse } = useGetRaritiesQuery()
   const { data: setsResponse } = useGetSetsQuery()
-
-  const cards = useMemo(() => cardsResponse?.data ?? [], [cardsResponse])
+  const prefetchCard = pokemonApi.usePrefetch('getCardById')
+  const displayedCards = useMemo(() => cardsResponse?.data ?? [], [cardsResponse])
   const totalCount = cardsResponse?.totalCount ?? 0
   const hasNextPage = filters.page * filters.pageSize < totalCount
+  const showSkeletonOnly = isLoading && !displayedCards.length
 
   const featuredRareCards = useMemo(() => {
-    return cards.filter((card) => card.rarity?.toLowerCase().includes('rare')).slice(0, 4)
-  }, [cards])
+    return displayedCards
+      .filter((card) => card.rarity?.toLowerCase().includes('rare'))
+      .slice(0, 4)
+  }, [displayedCards])
 
   const handleRandomCard = () => {
-    if (!cards.length) {
+    if (!displayedCards.length) {
       return
     }
 
-    const randomCard = cards[Math.floor(Math.random() * cards.length)]
+    const randomCard =
+      displayedCards[Math.floor(Math.random() * displayedCards.length)]
     navigate(`/card/${randomCard.id}`)
   }
 
@@ -105,9 +110,15 @@ function Home() {
                   key={card.id}
                   className="rare-card"
                   onClick={() => navigate(`/card/${card.id}`)}
+                  onMouseEnter={() => prefetchCard(card.id, { ifOlderThan: 120 })}
                   type="button"
                 >
-                  <img src={card.images.small} alt={card.name} loading="lazy" />
+                  <img
+                    src={card.images.small}
+                    alt={card.name}
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <div>
                     <strong>{card.name}</strong>
                     <span>{card.rarity}</span>
@@ -117,7 +128,7 @@ function Home() {
             </section>
           ) : null}
 
-          {isLoading ? <Loader count={8} /> : null}
+          {showSkeletonOnly ? <Loader count={8} /> : null}
 
           {isError ? (
             <ErrorMessage
@@ -127,16 +138,18 @@ function Home() {
             />
           ) : null}
 
-          {!isLoading && !isError && cards.length === 0 ? (
+          {!showSkeletonOnly && !isError && displayedCards.length === 0 ? (
             <section className="state-card">
               <h2>No cards found</h2>
               <p>Try changing the search, set, type, or rarity filters.</p>
             </section>
           ) : null}
 
-          {!isLoading && !isError && cards.length > 0 ? (
+          {!showSkeletonOnly && !isError && displayedCards.length > 0 ? (
             <>
-              <CardGrid cards={cards} />
+              <div className={isFetching ? 'results-shell results-shell-refreshing' : 'results-shell'}>
+                <CardGrid cards={displayedCards} />
+              </div>
               <Pagination
                 currentPage={filters.page}
                 hasNextPage={hasNextPage}

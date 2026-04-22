@@ -368,6 +368,16 @@ img {
   gap: 1.25rem;
 }
 
+.results-shell {
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+
+.results-shell-refreshing {
+  opacity: 0.78;
+}
+
 .pokemon-card,
 .skeleton-card {
   background: var(--bg-surface);

@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import { pokemonApi } from '../features/api/pokemonApi'
 import { toggleFavorite } from '../features/favorites/favoritesSlice'
 
 function PokemonCard({ card }) {
   const dispatch = useDispatch()
   const favoriteItems = useSelector((state) => state.favorites.items)
   const isFavorite = favoriteItems.some((favoriteCard) => favoriteCard.id === card.id)
+  const prefetchCard = pokemonApi.usePrefetch('getCardById')
 
   const handleToggleFavorite = () => {
     dispatch(
@@ -22,9 +24,13 @@ function PokemonCard({ card }) {
   }
 
   return (
-    <article className="pokemon-card">
+    <article
+      className="pokemon-card"
+      onMouseEnter={() => prefetchCard(card.id, { ifOlderThan: 120 })}
+      onFocus={() => prefetchCard(card.id, { ifOlderThan: 120 })}
+    >
       <div className="card-image-shell">
-        <img src={card.images.small} alt={card.name} loading="lazy" />
+        <img src={card.images.small} alt={card.name} loading="lazy" decoding="async" />
       </div>
 
       <div className="pokemon-card-body">
