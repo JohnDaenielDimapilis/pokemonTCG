@@ -42,6 +42,7 @@ function Home() {
   const totalCount = cardsResponse?.totalCount ?? 0
   const hasNextPage = filters.page * filters.pageSize < totalCount
   const showSkeletonOnly = isLoading && !displayedCards.length
+  const gridRenderKey = `${filters.page}-${filters.search}-${filters.type}-${filters.rarity}-${filters.setId}-${filters.sortBy}`
 
   const featuredRareCards = useMemo(() => {
     return displayedCards
@@ -148,7 +149,7 @@ function Home() {
           {!showSkeletonOnly && !isError && displayedCards.length > 0 ? (
             <>
               <div className={isFetching ? 'results-shell results-shell-refreshing' : 'results-shell'}>
-                <CardGrid cards={displayedCards} />
+                <CardGrid key={gridRenderKey} cards={displayedCards} />
               </div>
               <Pagination
                 currentPage={filters.page}
