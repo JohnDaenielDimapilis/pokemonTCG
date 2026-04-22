@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { pokemonApi } from '../features/api/pokemonApi'
 import { toggleFavorite } from '../features/favorites/favoritesSlice'
+import CardArtwork from './CardArtwork'
 import { getCardDisplayName } from '../utils/cardContent'
 
 function PokemonCard({ card }) {
@@ -32,7 +33,7 @@ function PokemonCard({ card }) {
       onFocus={() => prefetchCard(card.id, { ifOlderThan: 120 })}
     >
       <div className="card-image-shell">
-        <img src={card.images.small} alt={card.name} loading="lazy" decoding="async" />
+        <CardArtwork card={card} />
       </div>
 
       <div className="pokemon-card-body">

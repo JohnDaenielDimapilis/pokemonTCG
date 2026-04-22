@@ -129,9 +129,11 @@ img {
 .eyebrow,
 .hero-description,
 .section-header p,
+.catalog-summary,
 .details-subtitle,
 .muted-copy,
-.page-indicator {
+.page-indicator,
+.page-meta {
   margin: 0;
 }
 
@@ -144,8 +146,10 @@ img {
 .brand-subtitle,
 .hero-description,
 .section-header p,
+.catalog-summary,
 .muted-copy,
 .page-indicator,
+.page-meta,
 .pokemon-card p,
 .detail-block span,
 .info-card span {
@@ -430,6 +434,18 @@ img {
   width: 100%;
   height: 290px;
   object-fit: contain;
+}
+
+.catalog-summary {
+  margin-top: 0.55rem;
+}
+
+.page-indicator-block {
+  text-align: center;
+}
+
+.page-meta {
+  font-size: 0.85rem;
 }
 
 .pokemon-card-body {

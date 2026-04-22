@@ -1,8 +1,9 @@
 import { skipToken } from '@reduxjs/toolkit/query'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import CardGrid from './CardGrid'
+import CardArtwork from './CardArtwork'
 import ErrorMessage from './ErrorMessage'
 import FilterPanel from './FilterPanel'
 import Loader from './Loader'
@@ -50,10 +51,15 @@ function CatalogSection({
   const { data: raritiesResponse } = useGetRaritiesQuery()
   const { data: setsResponse } = useGetSetsQuery()
   const prefetchCard = pokemonApi.usePrefetch('getCardById')
+  const prefetchCards = pokemonApi.usePrefetch('getCards')
+  const prefetchCardsBySearch = pokemonApi.usePrefetch('getCardsBySearch')
   const activeQuery = hasSearch ? searchQuery : listQuery
 
   const displayedCards = useMemo(() => activeQuery.data?.data ?? [], [activeQuery.data])
   const totalCount = activeQuery.data?.totalCount ?? 0
+  const totalPages = totalCount > 0 ? Math.ceil(totalCount / queryFilters.pageSize) : 0
+  const visibleStart = totalCount > 0 ? (queryFilters.page - 1) * queryFilters.pageSize + 1 : 0
+  const visibleEnd = totalCount > 0 ? Math.min(queryFilters.page * queryFilters.pageSize, totalCount) : 0
   const hasNextPage = queryFilters.page * queryFilters.pageSize < totalCount
   const showSkeletonOnly = activeQuery.isLoading && !displayedCards.length
   const gridRenderKey = `${queryFilters.page}-${queryFilters.search}-${queryFilters.type}-${queryFilters.rarity}-${queryFilters.setId}-${queryFilters.sortBy}`
@@ -62,6 +68,32 @@ function CatalogSection({
       .filter((card) => card.rarity?.toLowerCase().includes('rare'))
       .slice(0, 4)
   }, [displayedCards])
+
+  useEffect(() => {
+    if (!activeQuery.data) {
+      return
+    }
+
+    if (hasNextPage) {
+      const nextPageFilters = {
+        ...queryFilters,
+        page: queryFilters.page + 1,
+      }
+
+      if (hasSearch) {
+        prefetchCardsBySearch(nextPageFilters, { ifOlderThan: 120 })
+      } else {
+        prefetchCards(nextPageFilters, { ifOlderThan: 120 })
+      }
+    }
+  }, [
+    activeQuery.data,
+    hasNextPage,
+    hasSearch,
+    prefetchCards,
+    prefetchCardsBySearch,
+    queryFilters,
+  ])
 
   return (
     <div className="content-layout">
@@ -85,6 +117,10 @@ function CatalogSection({
             <p className="eyebrow">{eyebrow}</p>
             <h2>{title}</h2>
             <p>{description}</p>
+            <p className="catalog-summary">
+              Showing {visibleStart}-{visibleEnd} of {totalCount.toLocaleString()} cards.
+              {totalCount >= 1000 ? ' More than 1,000 cards are available through paginated browsing.' : ''}
+            </p>
           </div>
           <div className="section-status">
             <span className="count-pill">{totalCount.toLocaleString()} matches</span>
@@ -105,12 +141,7 @@ function CatalogSection({
                 onMouseEnter={() => prefetchCard(card.id, { ifOlderThan: 120 })}
                 type="button"
               >
-                <img
-                  src={card.images.small}
-                  alt={card.name}
-                  loading="lazy"
-                  decoding="async"
-                />
+                <CardArtwork card={card} />
                 <div>
                   <strong>{card.name}</strong>
                   <span>{card.rarity}</span>
@@ -148,6 +179,9 @@ function CatalogSection({
             </div>
             <Pagination
               currentPage={queryFilters.page}
+              totalPages={totalPages}
+              pageSize={queryFilters.pageSize}
+              totalCount={totalCount}
               hasNextPage={hasNextPage}
               onPageChange={(page) => dispatch(setPage(page))}
             />

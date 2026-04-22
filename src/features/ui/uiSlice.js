@@ -8,7 +8,7 @@ const initialState = {
   setId: 'All',
   sortBy: 'name',
   page: 1,
-  pageSize: 20,
+  pageSize: 12,
 }
 
 const uiSlice = createSlice({

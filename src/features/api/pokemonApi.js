@@ -48,6 +48,7 @@ export const pokemonApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
   }),
+  keepUnusedDataFor: 300,
   endpoints: (builder) => ({
     getCards: builder.query({
       query: (params) =>

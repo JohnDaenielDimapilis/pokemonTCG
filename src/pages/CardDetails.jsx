@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import CardArtwork from '../components/CardArtwork'
 import ErrorMessage from '../components/ErrorMessage'
 import { useGetCardByIdQuery } from '../features/api/pokemonApi'
 import { toggleFavorite } from '../features/favorites/favoritesSlice'
@@ -42,7 +43,7 @@ function CardDetails() {
 
       <div className="details-layout">
         <div className="details-image-panel">
-          <img src={card.images.large} alt={card.name} />
+          <CardArtwork card={card} large eager />
         </div>
 
         <div className="details-content">

@@ -1,4 +1,4 @@
-function Pagination({ currentPage, hasNextPage, onPageChange }) {
+function Pagination({ currentPage, totalPages, pageSize, totalCount, hasNextPage, onPageChange }) {
   return (
     <div className="pagination">
       <button
@@ -9,7 +9,10 @@ function Pagination({ currentPage, hasNextPage, onPageChange }) {
       >
         Previous
       </button>
-      <p className="page-indicator">Page {currentPage}</p>
+      <div className="page-indicator-block">
+        <p className="page-indicator">Page {currentPage}{totalPages ? ` of ${totalPages}` : ''}</p>
+        <p className="page-meta">{pageSize} cards per page | {totalCount.toLocaleString()} total</p>
+      </div>
       <button
         className="secondary-button"
         disabled={!hasNextPage}
