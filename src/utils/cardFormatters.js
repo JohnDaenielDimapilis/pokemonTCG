@@ -11,6 +11,18 @@ export function dedupeCardsById(cards = []) {
   })
 }
 
+export function formatStatLabel(value) {
+  if (!value || typeof value !== 'string') {
+    return 'Not available'
+  }
+
+  return value
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[._-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export function formatValue(value, fallback = 'Not available') {
   if (value === null || value === undefined || value === '') {
     return fallback
@@ -33,4 +45,18 @@ export function formatKeyValueObject(value) {
   }
 
   return Object.entries(value)
+}
+
+export function flattenPriceEntries(value) {
+  return formatKeyValueObject(value).map(([entryLabel, entryValue]) => {
+    if (!entryValue || typeof entryValue !== 'object' || Array.isArray(entryValue)) {
+      return [formatStatLabel(entryLabel), entryValue]
+    }
+
+    const nestedSummary = Object.entries(entryValue)
+      .map(([nestedKey, nestedValue]) => `${formatStatLabel(nestedKey)}: ${nestedValue}`)
+      .join(' | ')
+
+    return [formatStatLabel(entryLabel), nestedSummary || 'Not available']
+  })
 }

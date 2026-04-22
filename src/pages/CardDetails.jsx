@@ -5,7 +5,12 @@ import ErrorMessage from '../components/ErrorMessage'
 import { useGetCardByIdQuery } from '../features/api/pokemonApi'
 import { toggleFavorite } from '../features/favorites/favoritesSlice'
 import { getCardDescription, getCardDisplayName } from '../utils/cardContent'
-import { formatKeyValueObject, formatValue } from '../utils/cardFormatters'
+import {
+  flattenPriceEntries,
+  formatKeyValueObject,
+  formatStatLabel,
+  formatValue,
+} from '../utils/cardFormatters'
 
 function CardDetails() {
   const { id } = useParams()
@@ -33,9 +38,18 @@ function CardDetails() {
   }
 
   const card = data?.data
+  if (!card) {
+    return (
+      <ErrorMessage
+        title="Card data is unavailable"
+        message="The API returned an empty card payload for this selection."
+      />
+    )
+  }
+
   const isFavorite = favoriteItems.some((favoriteCard) => favoriteCard.id === card.id)
-  const tcgPlayerEntries = formatKeyValueObject(card.tcgplayer)
-  const cardMarketEntries = formatKeyValueObject(card.cardmarket)
+  const tcgPlayerEntries = flattenPriceEntries(card.tcgplayer)
+  const cardMarketEntries = flattenPriceEntries(card.cardmarket)
   const setEntries = formatKeyValueObject(card.set)
   const legalityEntries = formatKeyValueObject(card.legalities)
 
@@ -166,7 +180,11 @@ function CardDetails() {
             {setEntries.length ? (
               <div className="details-grid">
                 {setEntries.map(([entryLabel, entryValue]) => (
-                  <InfoCard key={entryLabel} label={entryLabel} value={formatValue(entryValue)} />
+                  <InfoCard
+                    key={entryLabel}
+                    label={formatStatLabel(entryLabel)}
+                    value={formatValue(entryValue)}
+                  />
                 ))}
               </div>
             ) : (
@@ -191,13 +209,7 @@ function CardDetails() {
                 {tcgPlayerEntries.map(([entryLabel, entryValue]) => (
                   <article key={entryLabel} className="detail-block">
                     <strong>{entryLabel}</strong>
-                    <span>
-                      {typeof entryValue === 'object'
-                        ? Object.entries(entryValue)
-                            .map(([nestedKey, nestedValue]) => `${nestedKey}: ${nestedValue}`)
-                            .join(' | ')
-                        : String(entryValue)}
-                    </span>
+                    <span>{formatValue(entryValue)}</span>
                   </article>
                 ))}
               </div>
@@ -213,13 +225,7 @@ function CardDetails() {
                 {cardMarketEntries.map(([entryLabel, entryValue]) => (
                   <article key={entryLabel} className="detail-block">
                     <strong>{entryLabel}</strong>
-                    <span>
-                      {typeof entryValue === 'object'
-                        ? Object.entries(entryValue)
-                            .map(([nestedKey, nestedValue]) => `${nestedKey}: ${nestedValue}`)
-                            .join(' | ')
-                        : String(entryValue)}
-                    </span>
+                    <span>{formatValue(entryValue)}</span>
                   </article>
                 ))}
               </div>

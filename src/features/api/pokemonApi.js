@@ -11,6 +11,24 @@ const baseQuery = fetchBaseQuery({
 })
 const baseQueryWithRetry = retry(baseQuery, { maxRetries: 2 })
 
+function normalizeListResponse(response = {}) {
+  const cards = Array.isArray(response.data) ? response.data : []
+
+  return {
+    data: cards,
+    page: Number(response.page) || 1,
+    pageSize: Number(response.pageSize) || cards.length || 0,
+    count: Number(response.count) || cards.length,
+    totalCount: Number(response.totalCount) || cards.length,
+  }
+}
+
+function normalizeDetailResponse(response = {}) {
+  return {
+    data: response?.data ?? null,
+  }
+}
+
 function escapeQueryValue(value = '') {
   return value.replace(/["\\]/g, '\\$&').trim()
 }
@@ -74,6 +92,7 @@ export const pokemonApi = createApi({
           search: '',
           includeSearch: false,
         }),
+      transformResponse: normalizeListResponse,
     }),
     getCardsBySearch: builder.query({
       query: (params) =>
@@ -81,9 +100,11 @@ export const pokemonApi = createApi({
           ...params,
           includeSearch: true,
         }),
+      transformResponse: normalizeListResponse,
     }),
     getCardById: builder.query({
       query: (id) => `cards/${id}`,
+      transformResponse: normalizeDetailResponse,
     }),
     getTypes: builder.query({
       query: () => 'types',

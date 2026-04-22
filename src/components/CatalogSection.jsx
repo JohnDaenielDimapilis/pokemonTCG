@@ -62,18 +62,21 @@ function CatalogSection({
     () => dedupeCardsById(resolvedData?.data ?? []),
     [resolvedData],
   )
+  const responsePage = resolvedData?.page ?? queryFilters.page
+  const responsePageSize = resolvedData?.pageSize ?? queryFilters.pageSize
+  const responseCount = resolvedData?.count ?? displayedCards.length
   const totalCount = resolvedData?.totalCount ?? 0
-  const totalPages = totalCount > 0 ? Math.ceil(totalCount / queryFilters.pageSize) : 0
-  const isOutOfRangePage = totalPages > 0 && queryFilters.page > totalPages
+  const totalPages = totalCount > 0 ? Math.ceil(totalCount / responsePageSize) : 0
+  const isOutOfRangePage = totalPages > 0 && responsePage > totalPages
   const visibleStart =
     totalCount > 0 && !isOutOfRangePage
-      ? (queryFilters.page - 1) * queryFilters.pageSize + 1
+      ? (responsePage - 1) * responsePageSize + 1
       : 0
   const visibleEnd =
     totalCount > 0 && !isOutOfRangePage
-      ? Math.min(visibleStart + displayedCards.length - 1, totalCount)
+      ? Math.min(visibleStart + responseCount - 1, totalCount)
       : 0
-  const hasNextPage = totalPages > 0 ? queryFilters.page < totalPages : displayedCards.length === queryFilters.pageSize
+  const hasNextPage = totalPages > 0 ? responsePage < totalPages : responseCount === responsePageSize
   const showSkeletonOnly = activeQuery.isLoading && !displayedCards.length
   const gridRenderKey = `${queryFilters.page}-${queryFilters.search}-${queryFilters.type}-${queryFilters.rarity}-${queryFilters.setId}-${queryFilters.sortBy}`
   const featuredRareCards = useMemo(() => {
@@ -211,9 +214,9 @@ function CatalogSection({
               <CardGrid key={gridRenderKey} cards={displayedCards} />
             </div>
             <Pagination
-              currentPage={queryFilters.page}
+              currentPage={responsePage}
               totalPages={totalPages}
-              pageSize={queryFilters.pageSize}
+              pageSize={responsePageSize}
               totalCount={totalCount}
               hasNextPage={hasNextPage}
               onPageChange={(page) => {
