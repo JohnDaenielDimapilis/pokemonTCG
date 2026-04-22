@@ -1,6 +1,19 @@
+import { retry } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 const BASE_URL = 'https://api.pokemontcg.io/v2/'
+const baseQuery = fetchBaseQuery({
+  baseUrl: BASE_URL,
+  prepareHeaders: (headers) => {
+    headers.set('accept', 'application/json')
+    return headers
+  },
+})
+const baseQueryWithRetry = retry(baseQuery, { maxRetries: 2 })
+
+function escapeQueryValue(value = '') {
+  return value.replace(/["\\]/g, '\\$&').trim()
+}
 
 function buildCardQuery({
   page = 1,
@@ -8,26 +21,32 @@ function buildCardQuery({
   search = '',
   type = 'All',
   rarity = 'All',
+  rarityMode = 'exact',
   setId = 'All',
   sortBy = 'name',
   includeSearch = false,
 }) {
   const filters = []
+  const normalizedSearch = escapeQueryValue(search)
 
-  if (includeSearch && search.trim()) {
-    filters.push(`name:*${search.trim()}*`)
+  if (includeSearch && normalizedSearch) {
+    filters.push(`name:*${normalizedSearch}*`)
   }
 
   if (type !== 'All') {
-    filters.push(`types:"${type}"`)
+    filters.push(`types:"${escapeQueryValue(type)}"`)
   }
 
   if (rarity !== 'All') {
-    filters.push(`rarity:"${rarity}"`)
+    filters.push(
+      rarityMode === 'contains'
+        ? `rarity:*${escapeQueryValue(rarity)}*`
+        : `rarity:"${escapeQueryValue(rarity)}"`,
+    )
   }
 
   if (setId !== 'All') {
-    filters.push(`set.id:${setId}`)
+    filters.push(`set.id:${escapeQueryValue(setId)}`)
   }
 
   const queryParams = new URLSearchParams({
@@ -45,9 +64,7 @@ function buildCardQuery({
 
 export const pokemonApi = createApi({
   reducerPath: 'pokemonApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-  }),
+  baseQuery: baseQueryWithRetry,
   keepUnusedDataFor: 300,
   endpoints: (builder) => ({
     getCards: builder.query({

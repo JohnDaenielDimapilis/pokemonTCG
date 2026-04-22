@@ -42,6 +42,7 @@ function CatalogSection({
     () => ({
       ...filters,
       rarity: lockedRarity || filters.rarity,
+      rarityMode: lockedRarity ? 'contains' : 'exact',
     }),
     [filters, lockedRarity],
   )
@@ -56,15 +57,23 @@ function CatalogSection({
   const prefetchCardsBySearch = pokemonApi.usePrefetch('getCardsBySearch')
   const activeQuery = hasSearch ? searchQuery : listQuery
 
+  const resolvedData = activeQuery.currentData ?? activeQuery.data
   const displayedCards = useMemo(
-    () => dedupeCardsById(activeQuery.data?.data ?? []),
-    [activeQuery.data],
+    () => dedupeCardsById(resolvedData?.data ?? []),
+    [resolvedData],
   )
-  const totalCount = activeQuery.data?.totalCount ?? 0
+  const totalCount = resolvedData?.totalCount ?? 0
   const totalPages = totalCount > 0 ? Math.ceil(totalCount / queryFilters.pageSize) : 0
-  const visibleStart = totalCount > 0 ? (queryFilters.page - 1) * queryFilters.pageSize + 1 : 0
-  const visibleEnd = totalCount > 0 ? Math.min(queryFilters.page * queryFilters.pageSize, totalCount) : 0
-  const hasNextPage = queryFilters.page * queryFilters.pageSize < totalCount
+  const isOutOfRangePage = totalPages > 0 && queryFilters.page > totalPages
+  const visibleStart =
+    totalCount > 0 && !isOutOfRangePage
+      ? (queryFilters.page - 1) * queryFilters.pageSize + 1
+      : 0
+  const visibleEnd =
+    totalCount > 0 && !isOutOfRangePage
+      ? Math.min(visibleStart + displayedCards.length - 1, totalCount)
+      : 0
+  const hasNextPage = totalPages > 0 ? queryFilters.page < totalPages : displayedCards.length === queryFilters.pageSize
   const showSkeletonOnly = activeQuery.isLoading && !displayedCards.length
   const gridRenderKey = `${queryFilters.page}-${queryFilters.search}-${queryFilters.type}-${queryFilters.rarity}-${queryFilters.setId}-${queryFilters.sortBy}`
   const featuredRareCards = useMemo(() => {
@@ -74,8 +83,28 @@ function CatalogSection({
   }, [displayedCards])
 
   useEffect(() => {
+    if (isOutOfRangePage) {
+      dispatch(setPage(totalPages))
+    }
+  }, [dispatch, isOutOfRangePage, totalPages])
+
+  useEffect(() => {
     if (!activeQuery.data) {
       return
+    }
+
+    // Prefetch adjacent pages so Prev/Next feels immediate without rendering more cards up front.
+    if (queryFilters.page > 1) {
+      const previousPageFilters = {
+        ...queryFilters,
+        page: queryFilters.page - 1,
+      }
+
+      if (hasSearch) {
+        prefetchCardsBySearch(previousPageFilters, { ifOlderThan: 120 })
+      } else {
+        prefetchCards(previousPageFilters, { ifOlderThan: 120 })
+      }
     }
 
     if (hasNextPage) {
@@ -157,7 +186,7 @@ function CatalogSection({
 
         {showSkeletonOnly ? <Loader count={8} /> : null}
 
-        {activeQuery.isError ? (
+        {activeQuery.isError && !displayedCards.length ? (
           <ErrorMessage
             title="Unable to load cards"
             message={activeQuery.error?.error || 'The Pokemon TCG API is unavailable right now.'}
@@ -187,7 +216,10 @@ function CatalogSection({
               pageSize={queryFilters.pageSize}
               totalCount={totalCount}
               hasNextPage={hasNextPage}
-              onPageChange={(page) => dispatch(setPage(page))}
+              onPageChange={(page) => {
+                const safePage = totalPages > 0 ? Math.min(Math.max(page, 1), totalPages) : Math.max(page, 1)
+                dispatch(setPage(safePage))
+              }}
             />
           </>
         ) : null}
